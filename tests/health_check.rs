@@ -1,21 +1,16 @@
 use std::net::TcpListener;
 
-use sqlx::{Connection, PgConnection, PgPool};
-use zero2prod::configuration::get_configuration;
+use sqlx::PgPool;
 
 pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
 }
 
-async fn spawn_app() -> TestApp {
+async fn spawn_app(connection_pool: PgPool) -> TestApp {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bing address.");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
-    let configuration = get_configuration().expect("Failed to read configuration.");
-    let connection_pool = PgPool::connect(&configuration.database.connection_string())
-        .await
-        .expect("Failed to connect to Postgres");
     let server = zero2prod::startup::run(listener, connection_pool.clone())
         .expect("Failed to start server.");
     let _ = tokio::spawn(server);
@@ -25,9 +20,9 @@ async fn spawn_app() -> TestApp {
     }
 }
 
-#[tokio::test]
-async fn heath_check_works() {
-    let app = spawn_app().await;
+#[sqlx::test]
+async fn heath_check_works(connection_pool: PgPool) {
+    let app = spawn_app(connection_pool).await;
     let client = reqwest::Client::new();
     let response = client
         .get(&format!("{}/health_check", &app.address))
@@ -39,9 +34,9 @@ async fn heath_check_works() {
     assert_eq!(Some(0), response.content_length());
 }
 
-#[tokio::test]
-async fn subscribe_returns_a_200_for_valid_form_data() {
-    let app = spawn_app().await;
+#[sqlx::test]
+async fn subscribe_returns_a_200_for_valid_form_data(connection_pool: PgPool) {
+    let app = spawn_app(connection_pool).await;
 
     let client = reqwest::Client::new();
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
@@ -64,9 +59,9 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     assert_eq!(saved.name, "le guin");
 }
 
-#[tokio::test]
-async fn subscribe_returns_a_400_when_data_is_missing() {
-    let app = spawn_app().await;
+#[sqlx::test]
+async fn subscribe_returns_a_400_when_data_is_missing(connection_pool: PgPool) {
+    let app = spawn_app(connection_pool).await;
     let client = reqwest::Client::new();
     let test_cases = [
         ("name=le%20guin", "missing the email"),

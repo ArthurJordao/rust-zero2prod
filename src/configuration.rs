@@ -25,7 +25,7 @@ impl DatabaseSettings {
     pub fn connection_string(&self) -> String {
         let password_string = self
             .password
-            .clone()
+            .as_ref()
             .map(|password| format!(":{}", password))
             .unwrap_or(String::from(""));
         format!(

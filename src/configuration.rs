@@ -29,7 +29,7 @@ impl DatabaseSettings {
             .map(|password| format!(":{}", password))
             .unwrap_or(String::from(""));
         format!(
-            "postgres:://{}{}@{}:{}/{}",
+            "postgres://{}{}@{}:{}/{}",
             self.username, password_string, self.host, self.port, self.database_name
         )
     }

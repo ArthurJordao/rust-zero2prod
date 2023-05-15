@@ -3,7 +3,7 @@ use crate::fixtures::spawn_app;
 use sqlx::PgPool;
 
 #[sqlx::test]
-async fn heath_check_works(connection_pool: PgPool) {
+async fn health_check_works(connection_pool: PgPool) {
     let app = spawn_app(connection_pool).await;
     let client = reqwest::Client::new();
     let response = client

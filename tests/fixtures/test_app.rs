@@ -25,7 +25,7 @@ pub struct TestApp {
 
 pub async fn spawn_app(connection_pool: PgPool) -> TestApp {
     Lazy::force(&TRACING);
-    let client = reqwest::Client::new();
+    let client = Client::new();
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bing address.");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);

@@ -42,3 +42,4 @@ features = [
 
 [dev-dependencies]
 once_cell = "1"
+claim = "0.5"

@@ -53,7 +53,7 @@ async fn subscribe_returns_a_400_when_data_is_missing(connection_pool: PgPool) {
 }
 
 #[sqlx::test]
-async fn subscribe_retuns_a_200_when_fields_are_present_but_empty(connection_pool: PgPool) {
+async fn subscribe_retuns_a_400_when_fields_are_present_but_empty(connection_pool: PgPool) {
     let app = spawn_app(connection_pool).await;
     let test_cases = vec![
         ("name=&email=ursula_le_guin%40gmail.com", "empty name"),
@@ -64,7 +64,7 @@ async fn subscribe_retuns_a_200_when_fields_are_present_but_empty(connection_poo
         let response = create_subscription(body.into(), &app).await;
 
         assert_eq!(
-            200,
+            400,
             response.status().as_u16(),
             "The API did not return 200 OK when the payload was {}.",
             description

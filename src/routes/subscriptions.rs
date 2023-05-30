@@ -11,6 +11,12 @@ pub struct FormData {
     name: String,
 }
 
+pub fn parse_subscriber(form: FormData) -> Result<NewSubscriber, String> {
+    let name = SubscriberName::parse(form.name)?;
+    let email = SubscriberEmail::parse(form.email)?;
+    Ok(NewSubscriber { email, name })
+}
+
 #[tracing::instrument(
     name = "Addding a new subscriber",
     skip(form, pool),
@@ -20,15 +26,10 @@ pub struct FormData {
     )
 )]
 pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
-    let name = match SubscriberName::parse(form.0.name) {
-        Ok(sub_name) => sub_name,
+    let new_subscriber = match parse_subscriber(form.0) {
+        Ok(subscriber) => subscriber,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
-    let email = match SubscriberEmail::parse(form.0.email) {
-        Ok(sub_name) => sub_name,
-        Err(_) => return HttpResponse::BadRequest().finish(),
-    };
-    let new_subscriber = NewSubscriber { email, name };
     match insert_subscribe(&pool, &new_subscriber).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),

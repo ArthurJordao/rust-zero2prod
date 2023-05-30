@@ -66,7 +66,7 @@ async fn subscribe_retuns_a_400_when_fields_are_present_but_empty(connection_poo
         assert_eq!(
             400,
             response.status().as_u16(),
-            "The API did not return 200 OK when the payload was {}.",
+            "The API did not return 400 OK when the payload was {}.",
             description
         );
     }
